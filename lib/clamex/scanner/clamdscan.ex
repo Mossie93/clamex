@@ -28,12 +28,14 @@ defmodule Clamex.Scanner.Clamdscan do
   @impl true
   @spec scan(path :: Path.t()) ::
           :ok | {:error, atom()} | {:error, String.t()}
-  def scan(path) do
+  def scan(path, opts \\ []) do
+    clamdscan_opts = ["--no-summary" | opts] |> Enum.join(" ")
+
     try do
       {output, exit_code} =
         System.cmd(
           "clamdscan",
-          ["--no-summary", path],
+          [clamdscan_opts, path],
           stderr_to_stdout: true
         )
 
@@ -49,5 +51,9 @@ defmodule Clamex.Scanner.Clamdscan do
           _ -> raise error
         end
     end
+  end
+
+  def remote_scan(path) do
+    scan(path, ["--fdpass", "--stream"])
   end
 end
